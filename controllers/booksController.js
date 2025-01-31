@@ -6,7 +6,7 @@ exports.createBook = async (req, res) => {
         //extract data from the request body
         const { author, title, genre, progress } =req.body;
         // check for the club in the database by coach
-        const bookExistsName = await bookModel.findOne({where: {author:author}});
+        const bookExistsName = await bookModel.findOne({where: {author:author.toLowerCase(), }});
 
         if (bookExistsName) {
             return res.status(400).json({
@@ -14,7 +14,7 @@ exports.createBook = async (req, res) => {
             })
         }
         
-        const bookExists = await bookModel.findAll({where: {title: title}});
+        const bookExists = await bookModel.findAll({where: {title: title.toLowerCase(), }});
 
         //check if the club exists
         if (bookExists.length ==1){
@@ -25,8 +25,8 @@ exports.createBook = async (req, res) => {
             //create a new instance of the club database
             const newBook = await bookModel.create({
                 id: uuid(),
-                title,
-                author,
+                title: title.toLowerCase(),
+                author: author.toLowerCase(),
                 genre,
                 progress,
             });
@@ -57,16 +57,19 @@ exports.getAllBook = async (req, res) =>{
             total: allBook.length
         });
 
+        exports.createBook = async (req, res) => {
+            const { author, title, genre, progress } = req.body;
+        };
 
     } catch (error) {
-        res.status(500).json({
-            message: 'Internal server error: '+ error.message
-        }) 
+        next(error);
+            
+        
     }
 };
 
 // get one Book
-exports.getOneAuthor = async (req, res) =>{
+exports.getOneTitle = async (req, res) =>{
     try {
         //get the author from params
         const { title } = req.params;
@@ -85,6 +88,9 @@ exports.getOneAuthor = async (req, res) =>{
                     data: findBook
                 });
         }
+        exports.createBook = async (req, res) => {
+            const { author, title, genre, progress } = req.body;
+        };
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error: '+ error.message
@@ -93,14 +99,14 @@ exports.getOneAuthor = async (req, res) =>{
 };
 
 
-exports.getOneTitle = async (req, res) =>{
+exports.getOneAuthor = async (req, res) =>{
     try {
         //get the author from params
         const { author } = req.params;
         // Find THE Book
-        const book = await bookModel.findAll({where: { author:author } });
+        const nextBook = await bookModel.findAll({where: { author:author } });
 
-        if (book.length==0) {
+        if (nextBook.length==0) {
             res.status(400).json({
                 message: 'Author not found',
             })
@@ -109,9 +115,12 @@ exports.getOneTitle = async (req, res) =>{
                 //success response
                 res.status(201).json({
                     message: 'Author found',
-                    data: book
+                    data: nextBook
                 });
         }
+        exports.createBook = async (req, res) => {
+            const { author, title, genre, progress } = req.body;
+        };
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error: '+ error.message
@@ -152,6 +161,9 @@ exports.updateBook = async (req, res) => {
                 data: updatedBook
             })
         }
+        exports.createBook = async (req, res) => {
+            const { author, title, genre, progress } = req.body;
+        };
 
     } catch (error) {
         res.status(500).json({
@@ -166,18 +178,21 @@ exports.deleteBook = async (req, res) => {
     try{
         const { id } = req.params;
         //find the club to delete
-        const book = await bookModel.findAll({where: {id: id} });
-        if (book.length == 0) {
+        const findBook = await bookModel.findAll({where: {id: id} });
+        if (findBook.length == 0) {
             res.status(404).json({
-                message: 'Not deleted'
+                message: 'Already deleted'
             })
         } else {
             //delete club from the Library
             await bookModel.destroy({where: {id: id} });
             res.status(200).json({
-                message: `Deleted successfully`
+                message: `Deleted successfully`,
             })
         }
+        exports.createBook = async (req, res) => {
+            const { author, title, genre, progress } = req.body;
+        };
     } catch(error){
         res.status(500).json({
             message: 'Internal Server Error: '+ error.message
